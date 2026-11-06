@@ -1,19 +1,22 @@
+
 import os
 import psycopg
 from dotenv import load_dotenv
 
-# Load environment variables from .env
+# Load environment variables from .env locally
 load_dotenv()
 
+
 def get_db_connection():
-    """Create and return a PostgreSQL database connection."""
+    """Create and return a secure PostgreSQL database connection."""
     try:
         connection = psycopg.connect(
             host=os.getenv("DB_HOST", "localhost"),
             port=os.getenv("DB_PORT", "5432"),
             dbname=os.getenv("DB_NAME", "coaching_institute"),
             user=os.getenv("DB_USER", "postgres"),
-            password=os.getenv("DB_PASSWORD")
+            password=os.getenv("DB_PASSWORD"),
+            sslmode=os.getenv("DB_SSLMODE", "require")
         )
         return connection
 
