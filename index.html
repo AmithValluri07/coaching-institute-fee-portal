@@ -1,0 +1,1979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#09090b">
+    <title>Coaching Institute | Fee Management & Parent Portal</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkbg: "#09090b",
+                        cardbg: "#18181b",
+                        cardborder: "#27272a",
+                        brand: {
+                            500: "#f97316",
+                            600: "#ea580c"
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        body { background: #09090b; }
+        button, input, select { outline: none; }
+        .page { animation: fadeIn .2s ease-in; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .table-wrap { overflow-x: auto; }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 100;
+            max-width: calc(100% - 32px);
+            animation: fadeIn .2s ease-in;
+        }
+        button:disabled { opacity: .5; cursor: not-allowed; }
+    </style>
+</head>
+
+<body class="font-sans text-slate-100 antialiased">
+
+<header class="sticky top-0 z-40 border-b border-cardborder bg-darkbg/95 backdrop-blur">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+            <div class="bg-brand-500 text-white font-black px-3 py-2 rounded-lg">A</div>
+            <div>
+                <div class="font-bold text-sm">Company A Coaching</div>
+                <div class="text-[10px] text-slate-400">Jaipur • Fee Management System</div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2">
+            <button onclick="toggleLanguage()" id="langBtn"
+                class="px-3 py-2 text-xs rounded-lg bg-cardbg border border-cardborder hover:border-brand-500">
+                हिन्दी / English
+            </button>
+
+            <button onclick="switchView('parent')" id="parentNav"
+                class="px-3 py-2 text-xs rounded-lg bg-cardbg border border-cardborder">
+                Parent Portal
+            </button>
+
+            <button onclick="switchView('accounts')" id="accountsNav"
+                class="px-3 py-2 text-xs rounded-lg bg-brand-500 text-white font-semibold">
+                Accounts Dashboard
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-7xl mx-auto px-4 sm:px-6 py-7">
+
+    <div class="mb-6 rounded-xl border border-amber-700/40 bg-amber-950/20 px-4 py-3 text-xs text-amber-300">
+        <strong>Database-connected prototype:</strong>
+        Student, fee and payment records are stored in PostgreSQL through the Flask API.
+        Payments and OTP are demo-only. No real payment gateway or SMS/WhatsApp/email provider is connected.
+    </div>
+
+    <!-- ACCOUNTS DASHBOARD -->
+    <section id="accountsView" class="page space-y-6">
+
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black">Accounts Command Center</h1>
+                <p class="text-xs text-slate-400 mt-2">
+                    Multi-centre fee tracking • 4 centres • 2,600 students
+                </p>
+            </div>
+
+            <button onclick="exportCSV()"
+                class="bg-brand-500 hover:bg-brand-600 px-4 py-3 rounded-xl text-xs font-bold">
+                ↓ Export Fee Report (CSV)
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div class="bg-cardbg border border-cardborder border-t-4 border-t-slate-500 rounded-xl p-5">
+                <p class="text-xs text-slate-400">Annual Billed Revenue</p>
+                <h2 class="text-3xl font-black mt-2">₹31.2 Cr</h2>
+                <p class="text-[10px] text-slate-500 mt-2">Client-provided business estimate</p>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder border-t-4 border-t-brand-500 rounded-xl p-5">
+                <p class="text-xs text-slate-400">Instalment Value Overdue 60+ Days</p>
+                <h2 class="text-3xl font-black text-brand-500 mt-2">12%</h2>
+                <p class="text-[10px] text-slate-500 mt-2">Baseline reported in client brief</p>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder border-t-4 border-t-emerald-500 rounded-xl p-5">
+                <p class="text-xs text-slate-400">Collection Improvement Target</p>
+                <h2 class="text-3xl font-black text-emerald-400 mt-2">6%</h2>
+                <p class="text-[10px] text-slate-500 mt-2">60+ day overdue target</p>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder border-t-4 border-t-purple-500 rounded-xl p-5">
+                <p class="text-xs text-slate-400">Demo Students</p>
+                <h2 class="text-3xl font-black mt-2" id="studentCount">3</h2>
+                <p class="text-[10px] text-slate-500 mt-2">Records loaded from PostgreSQL</p>
+            </div>
+        </div>
+
+        <div class="bg-cardbg border border-cardborder rounded-xl p-5">
+            <div class="flex flex-wrap justify-between gap-2 mb-4">
+                <h3 class="font-bold text-sm">Sample Collection Summary</h3>
+                <span class="text-[10px] text-slate-500">Based on the demo records</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <p class="text-xs text-slate-400">Total Instalment Value</p>
+                    <p id="totalBilled" class="text-xl font-bold mt-1">₹1,00,000</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400">Total Collected</p>
+                    <p id="totalCollected" class="text-xl font-bold text-emerald-400 mt-1">₹45,000</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400">Outstanding Balance</p>
+                    <p id="totalOutstanding" class="text-xl font-bold text-brand-500 mt-1">₹55,000</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- STUDENT LEDGER -->
+        <div class="bg-cardbg border border-cardborder rounded-xl overflow-hidden">
+            <div class="p-5 border-b border-cardborder flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                    <h3 class="font-bold text-sm">Student Fee Ledgers</h3>
+                    <p class="text-[10px] text-slate-400 mt-1">Search and view student records from PostgreSQL</p>
+                </div>
+
+                <input id="searchInput"
+                    oninput="renderStudents()"
+                    type="search"
+                    placeholder="Search student or ID..."
+                    class="w-full sm:w-64 bg-darkbg border border-cardborder rounded-lg px-3 py-2 text-xs focus:border-brand-500">
+            </div>
+
+            <div class="table-wrap">
+                <table class="w-full text-left text-xs min-w-[750px]">
+                    <thead class="bg-darkbg text-slate-400 uppercase text-[10px]">
+                        <tr>
+                            <th class="px-5 py-4">Student</th>
+                            <th class="px-5 py-4">Batch</th>
+                            <th class="px-5 py-4">Due Date</th>
+                            <th class="px-5 py-4">Total / Paid</th>
+                            <th class="px-5 py-4">Balance</th>
+                            <th class="px-5 py-4">Status</th>
+                            <th class="px-5 py-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTable" class="divide-y divide-cardborder"></tbody>
+                </table>
+            </div>
+
+            <div id="emptyState" class="hidden text-center py-10 text-sm text-slate-500">
+                No matching student records found.
+            </div>
+        </div>
+
+        <!-- REMINDER AND AI SECTION -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5">
+                <h3 class="font-bold text-sm">Reminder Management</h3>
+                <p class="text-xs text-slate-400 mt-2">
+                    Send a simulated bilingual reminder for a selected student's outstanding balance.
+                </p>
+                <button onclick="runScheduledReminders()" class="mt-3 px-3 py-2 rounded-lg bg-brand-500 text-xs font-bold">Generate Due-Date Reminder Records</button>
+                <div id="reminderLog" class="mt-4 space-y-2">
+                    <p class="text-xs text-slate-500">No new demo reminders generated.</p>
+                </div>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5">
+                <h3 class="font-bold text-sm">AI Dropout Risk Monitoring</h3>
+                <p class="text-xs text-slate-400 mt-2">
+                    Risk assessment is intended to create counsellor tasks only.
+                    It must never trigger fee penalties or automatic parent messages.
+                </p>
+                <div class="mt-4 p-3 rounded-lg bg-darkbg border border-cardborder">
+                    <p class="text-xs text-slate-300">Counsellor review workflow</p>
+                    <p class="text-xs text-amber-400 mt-2">Explainable demo heuristic. Flags create review tasks only; they never change fees or message parents.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-cardbg border border-cardborder rounded-xl p-5">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h3 class="font-bold text-sm">Centre & Batch Outstanding Summary</h3>
+                <button onclick="loadDashboardSummary()" class="text-xs text-brand-500">Refresh</button>
+            </div>
+            <div id="centreBatchSummary" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 text-xs text-slate-300">Loading summaries...</div>
+        </div>
+
+        <!-- ADDITIONAL MVP WORKFLOWS -->
+        <section class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 space-y-3">
+                <h3 class="font-bold text-sm">Academic CSV Upload</h3>
+                <p class="text-xs text-slate-400">Upload attendance and test scores using the CSV templates described in README.md.</p>
+                <label class="block text-xs text-slate-300">Attendance CSV</label>
+                <input id="attendanceCsv" type="file" accept=".csv" class="w-full text-xs text-slate-300" />
+                <button onclick="uploadAcademicCsv('attendance')" class="px-4 py-2 rounded-lg bg-brand-500 text-xs font-bold">Import Attendance</button>
+                <label class="block text-xs text-slate-300 pt-2">Test Scores CSV</label>
+                <input id="scoresCsv" type="file" accept=".csv" class="w-full text-xs text-slate-300" />
+                <button onclick="uploadAcademicCsv('test-scores')" class="px-4 py-2 rounded-lg bg-brand-500 text-xs font-bold">Import Test Scores</button>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 space-y-3">
+                <h3 class="font-bold text-sm">Refund Estimator</h3>
+                <p class="text-xs text-slate-400">Illustrative pro-rata estimate. Final approval must follow the institute's published written policy.</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <input id="refundPaid" type="number" min="0.01" step="0.01" placeholder="Amount paid (₹)" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                    <input id="refundDays" type="number" min="1" placeholder="Total course days" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                    <input id="refundAttended" type="number" min="0" placeholder="Attended days" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                    <input id="refundDeductions" type="number" min="0" step="0.01" value="0" placeholder="Approved deductions ₹" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                </div>
+                <button onclick="estimateRefund()" class="px-4 py-2 rounded-lg bg-brand-500 text-xs font-bold">Calculate Estimate</button>
+                <button onclick="submitRefundRequest()" class="px-4 py-2 rounded-lg border border-cardborder text-xs">Submit for Staff Review</button>
+                <div id="refundResult" class="text-xs text-slate-300"></div>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 space-y-3">
+                <h3 class="font-bold text-sm">Counsellor Support Flags</h3>
+                <p class="text-xs text-slate-400">Explainable overdue/attendance heuristic. It creates a task only; no fee action or parent message.</p>
+                <select id="riskStudent" class="w-full bg-darkbg border border-cardborder rounded-lg p-2 text-xs"></select>
+                <button onclick="createCounsellorTask()" class="px-4 py-2 rounded-lg bg-brand-500 text-xs font-bold">Assess & Create Task</button>
+                <div id="counsellorResult" class="text-xs text-slate-300"></div>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 space-y-3">
+                <h3 class="font-bold text-sm">Exports</h3>
+                <p class="text-xs text-slate-400">Download successful payment receipts in a Tally-oriented CSV layout.</p>
+                <div class="flex flex-wrap gap-2">
+                    <a href="/api/exports/tally.csv" class="inline-block px-4 py-2 rounded-lg bg-brand-500 text-xs font-bold">Download Tally CSV</a>
+                    <a href="/api/exports/payments.csv" class="inline-block px-4 py-2 rounded-lg border border-cardborder text-xs font-bold">Download Payment CSV</a>
+                </div>
+                <p class="text-[10px] text-slate-500">Tally export includes successful receipts. Payment CSV includes all recorded payment statuses for reconciliation. Confirm ledger mapping and tax treatment before importing into live Tally.</p>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5 space-y-3">
+                <h3 class="font-bold text-sm">Unmatched Bank / UPI Payments</h3>
+                <p class="text-xs text-slate-400">Record incoming credits that are not yet linked to a student instalment, then reconcile them to the correct instalment.</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input id="unmatchedReference" placeholder="Bank / UPI reference" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                    <input id="unmatchedPayer" placeholder="Payer name (optional)" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                    <input id="unmatchedAmount" type="number" min="0.01" step="0.01" placeholder="Amount ₹" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                    <input id="unmatchedDate" type="date" class="bg-darkbg border border-cardborder rounded-lg p-2 text-xs" />
+                </div>
+                <button onclick="addUnmatchedPayment()" class="px-4 py-2 rounded-lg bg-brand-500 text-xs font-bold">Add to Unmatched Queue</button>
+                <button onclick="loadUnmatchedPayments()" class="px-3 py-2 rounded-lg border border-cardborder text-xs">Refresh Queue</button>
+                <div id="unmatchedPaymentQueue" class="space-y-2 text-xs"></div>
+            </div>
+        </section>
+
+    </section>
+
+    <!-- PARENT PORTAL -->
+    <section id="parentView" class="page hidden space-y-6">
+
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-cardborder pb-5">
+            <div>
+                <h1 class="text-2xl font-black" data-i18n="parentTitle">Parent Portal</h1>
+                <p class="text-xs text-slate-400 mt-2" id="parentWelcome">
+                    Welcome, Ishita Sharma • JEE 2027 Evening
+                </p>
+            </div>
+
+            <span class="text-xs px-3 py-2 rounded-lg border border-amber-700/40 bg-amber-950/20 text-amber-300">
+                Demo parent account
+            </span>
+        </div>
+
+        <div class="bg-cardbg border border-cardborder rounded-xl p-4">
+            <label for="parentStudent" class="text-xs text-slate-400 block mb-2">
+                Select demo student
+            </label>
+            <select id="parentStudent" onchange="loadParentStudent()"
+                class="w-full sm:w-80 bg-darkbg border border-cardborder rounded-lg px-3 py-3 text-sm">
+                <option value="">Loading students...</option>
+            </select>
+        </div>
+
+        <div class="bg-cardbg border border-cardborder rounded-xl p-4 space-y-3">
+            <h3 class="font-bold text-sm">Demo Parent Verification</h3>
+            <p class="text-xs text-amber-300">Demo only: OTP is displayed on screen; no SMS is sent. Production requires verified guardian contact details and parental consent.</p>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="requestDemoOtp()" class="px-3 py-2 rounded-lg bg-brand-500 text-xs font-bold">Generate Demo OTP</button>
+                <input id="demoOtpInput" inputmode="numeric" maxlength="6" placeholder="6-digit OTP" class="bg-darkbg border border-cardborder rounded-lg px-3 py-2 text-xs" />
+                <button onclick="verifyDemoOtp()" class="px-3 py-2 rounded-lg border border-cardborder text-xs">Verify</button>
+            </div>
+            <p id="otpMessage" class="text-xs text-slate-400"></p>
+        </div>
+
+        <!-- DUES CARD -->
+        <div class="bg-cardbg border border-cardborder rounded-2xl p-6 sm:p-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+            <div>
+                <p class="text-xs text-slate-400 uppercase tracking-wider font-bold">
+                    Total Outstanding Dues
+                </p>
+                <h2 id="parentBalance" class="text-4xl font-black mt-2">₹15,000</h2>
+                <span id="parentStatus"
+                    class="inline-block mt-3 px-3 py-1 rounded-lg text-xs bg-brand-500/10 text-brand-500">
+                    Loading...
+                </span>
+            </div>
+
+            <div class="border-t md:border-t-0 md:border-l border-cardborder pt-4 md:pt-0 md:pl-6 space-y-3">
+                <div>
+                    <label for="parentInstalmentSelect" class="text-xs text-slate-400 block mb-2">
+                        Select Instalment
+                    </label>
+                    <select id="parentInstalmentSelect" onchange="selectParentInstalment()"
+                        class="w-full bg-darkbg border border-cardborder rounded-lg px-3 py-2 text-sm text-white">
+                        <option value="">Loading instalments...</option>
+                    </select>
+                </div>
+                <p class="text-xs text-slate-400">
+                    <strong class="text-white">Selected Instalment Balance:</strong>
+                    <span id="selectedInstalmentBalance">—</span>
+                </p>
+                <p class="text-xs text-slate-400">
+                    <strong class="text-white">Due Date:</strong>
+                    <span id="parentDueDate">—</span>
+                </p>
+                <p class="text-xs text-slate-400">
+                    <strong class="text-white">Batch:</strong>
+                    <span id="parentBatch">—</span>
+                </p>
+            </div>
+
+            <div class="space-y-3">
+                <div>
+                    <label for="paymentAmountInput" class="text-[10px] text-slate-400 block mb-1">
+                        Enter Payment Amount (₹)
+                    </label>
+                    <input type="number" id="paymentAmountInput" min="0.01" step="0.01"
+                        inputmode="decimal"
+                        class="w-full bg-darkbg border border-cardborder rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500"
+                        placeholder="Enter amount">
+                    <p class="text-[10px] text-slate-500 mt-1">
+                        You can pay the full instalment balance or a smaller amount.
+                    </p>
+                </div>
+
+                <div>
+                    <label for="paymentMethodSelect" class="text-[10px] text-slate-400 block mb-1">
+                        Select Payment Method
+                    </label>
+                    <select id="paymentMethodSelect"
+                        class="w-full bg-darkbg border border-cardborder rounded-lg px-3 py-2 text-sm text-white focus:border-brand-500">
+                        <option value="UPI">UPI (GPay / PhonePe / Paytm)</option>
+                        <option value="CARD">Credit / Debit Card</option>
+                        <option value="NET_BANKING">Net Banking</option>
+                        <option value="CASH">Cash (At Institute Counter)</option>
+                        <option value="BANK_TRANSFER">Bank Transfer (NEFT/RTGS)</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+
+                <button onclick="simulatePayment();"
+                     id="payButton"
+                     disabled
+                     class="w-full bg-brand-500 hover:bg-brand-600 rounded-xl py-3 px-4 text-sm font-bold">
+                     Simulate Payment (Demo)
+                </button>
+
+                <button onclick="downloadReceipt()"
+                    class="w-full bg-darkbg border border-cardborder hover:border-brand-500 rounded-xl py-3 px-4 text-xs">
+                    View / Download Payment Receipt
+                </button>
+            </div>
+        </div>
+
+        <!-- ACADEMIC INFORMATION -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5">
+                <h3 class="font-bold text-sm border-b border-cardborder pb-3">Attendance</h3>
+                <div id="parentAttendance" class="text-xs text-slate-400 mt-4">Loading attendance...</div>
+            </div>
+
+            <div class="bg-cardbg border border-cardborder rounded-xl p-5">
+                <h3 class="font-bold text-sm border-b border-cardborder pb-3">Test Performance</h3>
+                <div id="parentTests" class="text-xs text-slate-400 mt-4">Loading test scores...</div>
+            </div>
+        </div>
+
+        <!-- REMINDER HISTORY -->
+        <div class="bg-cardbg border border-cardborder rounded-xl p-5">
+            <h3 class="font-bold text-sm">Reminder History</h3>
+            <div id="parentReminderLog" class="mt-4 text-xs text-slate-400">
+                No reminder history available in this demo session.
+            </div>
+        </div>
+    </section>
+
+    <!-- LEDGER MODAL -->
+    <div id="ledgerModal" class="hidden fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+        <div class="bg-cardbg border border-cardborder rounded-2xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold">Student Ledger Details</h3>
+                <button onclick="closeLedger()" class="text-slate-400 hover:text-white text-xl">×</button>
+            </div>
+            <div id="ledgerDetails" class="mt-5 space-y-3 text-sm"></div>
+            <button onclick="closeLedger()"
+                class="mt-6 w-full bg-brand-500 hover:bg-brand-600 py-3 rounded-lg text-sm font-bold">
+                Close
+            </button>
+        </div>
+    </div>
+</main>
+
+<div id="toast" class="toast hidden rounded-xl border border-cardborder bg-cardbg shadow-2xl px-5 py-4 text-sm"></div>
+<script>
+    // --------------------------------------------------
+    // APPLICATION STATE
+    // --------------------------------------------------
+
+    let students = [];
+    let selectedStudentId = "STU-0587";
+    let selectedInstalment = null;
+    let latestReceiptUrl = "";
+    let paymentInProgress = false;
+    let parentOtpVerificationToken = "";
+    let parentOtpVerifiedAdmission = "";
+
+    const reminderHistory = [];
+    let currentLang = "en";
+    let toastTimer;
+
+    const translations = {
+        en: { parentTitle: "Parent Portal" },
+        hi: { parentTitle: "अभिभावक पोर्टल" }
+    };
+
+    const ALLOWED_PAYMENT_METHODS = [
+        "UPI",
+        "CARD",
+        "NET_BANKING",
+        "CASH",
+        "BANK_TRANSFER",
+        "OTHER"
+    ];
+
+    // --------------------------------------------------
+    // HELPERS
+    // --------------------------------------------------
+
+    function money(value) {
+        return new Intl.NumberFormat("en-IN", {
+            style: "currency",
+            currency: "INR",
+            maximumFractionDigits: 2
+        }).format(Number(value) || 0);
+    }
+
+    function getStudent(id) {
+        return students.find(student => student.id === id);
+    }
+
+    function escapeHTML(value) {
+        return String(value ?? "").replace(/[&<>"']/g, char => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        })[char]);
+    }
+
+    function formatDate(dateString) {
+        if (!dateString) return "—";
+
+        const date = new Date(dateString + "T00:00:00");
+
+        if (Number.isNaN(date.getTime())) return "—";
+
+        return date.toLocaleDateString("en-IN", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric"
+        });
+    }
+
+    function getDaysOverdue(student) {
+        if (!student.dueDate) return 0;
+
+        const due = new Date(student.dueDate + "T00:00:00");
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const balance = student.total - student.paid;
+
+        if (balance <= 0 || today <= due) return 0;
+
+        return Math.floor((today - due) / 86400000);
+    }
+
+    function getStatus(student) {
+        const balance = student.total - student.paid;
+        const days = getDaysOverdue(student);
+
+        if (balance <= 0) return "Paid";
+        if (days > 0 && student.paid > 0) return "Part Paid • Overdue";
+        if (days > 0) return "Overdue";
+        if (student.paid > 0) return "Part Paid";
+        return "Due";
+    }
+
+    function showToast(message) {
+        const toast = document.getElementById("toast");
+        toast.textContent = message;
+        toast.classList.remove("hidden");
+
+        clearTimeout(toastTimer);
+
+        toastTimer = setTimeout(() => {
+            toast.classList.add("hidden");
+        }, 3500);
+    }
+
+    async function readApiResponse(response) {
+        let data;
+
+        try {
+            data = await response.json();
+        } catch {
+            throw new Error("The server returned an invalid response.");
+        }
+
+        if (!response.ok || data.status !== "success") {
+            throw new Error(
+                data.message || `Request failed with HTTP ${response.status}.`
+            );
+        }
+
+        return data;
+    }
+
+    // --------------------------------------------------
+    // PAYMENT RECEIPTS
+    // --------------------------------------------------
+
+    function openReceipt(transactionId) {
+        if (!transactionId) {
+            showToast("Transaction ID is missing. Receipt cannot be opened.");
+            return;
+        }
+
+        const receiptUrl = `/api/payments/${encodeURIComponent(transactionId)}/receipt`;
+        const receiptWindow = window.open(receiptUrl, "_blank", "noopener,noreferrer");
+
+        if (!receiptWindow) {
+            showToast("Your browser blocked the receipt pop-up. Allow pop-ups and try again.");
+        }
+    }
+
+    function downloadReceipt() {
+        if (latestReceiptUrl) {
+            const receiptWindow = window.open(latestReceiptUrl, "_blank", "noopener,noreferrer");
+            if (!receiptWindow) {
+                showToast("Your browser blocked the receipt pop-up. Allow pop-ups and try again.");
+            }
+            return;
+        }
+
+        // The ledger API returns payment records separately from instalment totals.
+        // If no receipt URL is cached, find the most recent successful payment
+        // from the currently loaded parent ledger.
+        const successfulPayments = parentInstalments
+            .flatMap(instalment => Array.isArray(instalment.payments) ? instalment.payments : [])
+            .filter(payment =>
+                String(payment.payment_status || payment.status || "").toUpperCase() === "SUCCESS" &&
+                payment.transaction_id
+            )
+            .sort((a, b) => new Date(b.paid_at || b.created_at || 0) - new Date(a.paid_at || a.created_at || 0));
+
+        if (successfulPayments.length > 0) {
+            openReceipt(successfulPayments[0].transaction_id);
+            return;
+        }
+
+        showToast("No successful payment receipt is available for this student yet.");
+    }
+
+    // --------------------------------------------------
+    // DATABASE DATA
+    // --------------------------------------------------
+
+    async function loadStudents() {
+        try {
+            const response = await fetch("/api/students");
+            const data = await readApiResponse(response);
+
+            if (!Array.isArray(data.students)) {
+                throw new Error("Unexpected student API response.");
+            }
+
+            students = data.students.map(student => ({
+                id: student.admission_number,
+                name: student.full_name,
+                batch: student.batch_name,
+                dueDate: student.due_date,
+                total: Number(student.total_payable ?? student.total_fee ?? 0),
+                paid: Number(student.amount_paid || 0)
+            }));
+
+            if (!students.some(student => student.id === selectedStudentId)) {
+                selectedStudentId = students.length ? students[0].id : "";
+            }
+
+            populateParentStudentOptions();
+
+            const riskSelect = document.getElementById("riskStudent");
+
+            if (riskSelect) {
+                riskSelect.innerHTML = students.map(student => `
+                    <option value="${escapeHTML(student.id)}">
+                        ${escapeHTML(student.name)} (${escapeHTML(student.id)})
+                    </option>
+                `).join("");
+            }
+
+            return true;
+
+        } catch (error) {
+            console.error("Student loading error:", error);
+            students = [];
+
+            document.getElementById("studentTable").innerHTML = `
+                <tr>
+                    <td colspan="7" class="px-5 py-8 text-center text-red-400">
+                        Could not load student records. Check Flask and PostgreSQL.
+                    </td>
+                </tr>`;
+
+            document.getElementById("parentStudent").innerHTML =
+                '<option value="">Unable to load students</option>';
+
+            showToast(error.message || "Unable to load student records.");
+            return false;
+        }
+    }
+
+    function populateParentStudentOptions() {
+        const select = document.getElementById("parentStudent");
+        select.innerHTML = "";
+
+        students.forEach(student => {
+            const option = document.createElement("option");
+            option.value = student.id;
+            option.textContent = student.name + " • " + student.id;
+            select.appendChild(option);
+        });
+
+        if (selectedStudentId) {
+            select.value = selectedStudentId;
+        }
+    }
+
+    // --------------------------------------------------
+    // NAVIGATION
+    // --------------------------------------------------
+
+    function switchView(view) {
+        const accounts = document.getElementById("accountsView");
+        const parent = document.getElementById("parentView");
+
+        accounts.classList.toggle("hidden", view !== "accounts");
+        parent.classList.toggle("hidden", view !== "parent");
+
+        document.getElementById("accountsNav").className =
+            view === "accounts"
+                ? "px-3 py-2 text-xs rounded-lg bg-brand-500 text-white font-semibold"
+                : "px-3 py-2 text-xs rounded-lg bg-cardbg border border-cardborder";
+
+        document.getElementById("parentNav").className =
+            view === "parent"
+                ? "px-3 py-2 text-xs rounded-lg bg-brand-500 text-white font-semibold"
+                : "px-3 py-2 text-xs rounded-lg bg-cardbg border border-cardborder";
+
+        if (view === "parent") {
+            loadParentStudent();
+        }
+
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // --------------------------------------------------
+    // LANGUAGE TOGGLE
+    // --------------------------------------------------
+
+    function toggleLanguage() {
+        currentLang = currentLang === "en" ? "hi" : "en";
+        document.documentElement.lang = currentLang;
+
+        document.getElementById("langBtn").textContent =
+            currentLang === "en" ? "हिन्दी / English" : "English / हिन्दी";
+
+        document.querySelectorAll("[data-i18n]").forEach(element => {
+            const key = element.dataset.i18n;
+
+            if (translations[currentLang][key]) {
+                element.textContent = translations[currentLang][key];
+            }
+        });
+
+        showToast(
+            currentLang === "hi"
+                ? "हिंदी शीर्षक सक्रिय किया गया।"
+                : "English language selected."
+        );
+    }
+
+    // --------------------------------------------------
+    // ACCOUNTS DASHBOARD
+    // --------------------------------------------------
+
+    function renderStudents() {
+        const search = document.getElementById("searchInput").value.toLowerCase();
+
+        const filtered = students.filter(student =>
+            student.id.toLowerCase().includes(search) ||
+            student.name.toLowerCase().includes(search) ||
+            student.batch.toLowerCase().includes(search)
+        );
+
+        const tbody = document.getElementById("studentTable");
+        tbody.innerHTML = "";
+
+        document.getElementById("emptyState").classList.toggle(
+            "hidden",
+            filtered.length > 0
+        );
+
+        filtered.forEach(student => {
+            const balance = Math.max(0, student.total - student.paid);
+            const days = getDaysOverdue(student);
+            const status = getStatus(student);
+
+            const statusClass = balance === 0
+                ? "bg-emerald-950 text-emerald-400 border-emerald-800"
+                : days > 0
+                    ? "bg-brand-500/10 text-brand-500 border-brand-500/30"
+                    : "bg-slate-800 text-slate-300 border-slate-700";
+
+            const row = document.createElement("tr");
+            row.className = "hover:bg-white/[0.02]";
+
+            row.innerHTML = `
+                <td class="px-5 py-4">
+                    <strong>${escapeHTML(student.id)}</strong>
+                    <div class="text-slate-400 text-[10px] mt-1">${escapeHTML(student.name)}</div>
+                </td>
+
+                <td class="px-5 py-4 text-slate-300">${escapeHTML(student.batch)}</td>
+                <td class="px-5 py-4 text-slate-300">${formatDate(student.dueDate)}</td>
+
+                <td class="px-5 py-4">
+                    ${money(student.total)} / ${money(student.paid)}
+                </td>
+
+                <td class="px-5 py-4 font-bold ${balance > 0 ? "text-brand-500" : "text-emerald-400"}">
+                    ${money(balance)}
+                </td>
+
+                <td class="px-5 py-4">
+                    <span class="inline-block border rounded-md px-2 py-1 text-[10px] ${statusClass}">
+                        ${escapeHTML(status)}
+                    </span>
+                </td>
+
+                <td class="px-5 py-4 text-right whitespace-nowrap">
+                    <button onclick="viewLedger('${escapeHTML(student.id)}')"
+                        class="text-slate-300 hover:text-white underline mr-3">
+                        Ledger
+                    </button>
+
+                    <button onclick="sendReminder('${escapeHTML(student.id)}')"
+                        class="text-brand-500 hover:text-orange-300 font-bold"
+                        ${balance <= 0 ? "disabled" : ""}>
+                        Remind
+                    </button>
+                </td>
+            `;
+
+            tbody.appendChild(row);
+        });
+
+        updateSummary();
+    }
+
+    function updateSummary() {
+        const total = students.reduce((sum, student) => sum + student.total, 0);
+        const paid = students.reduce((sum, student) => sum + student.paid, 0);
+        const balance = total - paid;
+
+        document.getElementById("studentCount").textContent = students.length;
+        document.getElementById("totalBilled").textContent = money(total);
+        document.getElementById("totalCollected").textContent = money(paid);
+        document.getElementById("totalOutstanding").textContent = money(balance);
+    }
+
+    // --------------------------------------------------
+    // DATABASE-CONNECTED STUDENT LEDGER
+    // --------------------------------------------------
+
+    async function viewLedger(id) {
+        const modal = document.getElementById("ledgerModal");
+        const details = document.getElementById("ledgerDetails");
+
+        modal.classList.remove("hidden");
+
+        details.innerHTML = `
+            <p class="text-slate-400">Loading fee ledger from PostgreSQL...</p>
+        `;
+
+        try {
+            const response = await fetch(
+                `/api/students/${encodeURIComponent(id)}/ledger`
+            );
+
+            const data = await readApiResponse(response);
+            const student = data.student;
+            const instalments = Array.isArray(data.instalments)
+                ? data.instalments
+                : [];
+
+            const totalPaid = instalments.reduce(
+                (sum, item) => sum + Number(item.amount_paid || 0), 0
+            );
+
+            const totalOutstanding = instalments.reduce(
+                (sum, item) => sum + Number(item.outstanding_balance || 0), 0
+            );
+
+            let html = `
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-cardborder pb-4">
+                        <div>
+                            <p class="text-xs text-slate-400">Admission Number</p>
+                            <p class="font-bold mt-1">${escapeHTML(student.admission_number)}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Student Name</p>
+                            <p class="font-bold mt-1">${escapeHTML(student.full_name)}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Batch</p>
+                            <p class="font-bold mt-1">${escapeHTML(student.batch_name)}</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-slate-400">Number of Instalments</p>
+                            <p class="font-bold mt-1">${instalments.length}</p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="bg-darkbg rounded-lg p-3">
+                            <p class="text-xs text-slate-400">Total Fee</p>
+                            <p class="font-bold mt-1">${money(student.total_fee)}</p>
+                        </div>
+                        <div class="bg-darkbg rounded-lg p-3">
+                            <p class="text-xs text-slate-400">Account Discount</p>
+                            <p class="font-bold mt-1">${money(student.account_discount)}</p>
+                        </div>
+                        <div class="bg-darkbg rounded-lg p-3">
+                            <p class="text-xs text-slate-400">Final Fee</p>
+                            <p class="font-bold mt-1">${money(student.final_fee)}</p>
+                        </div>
+                        <div class="bg-darkbg rounded-lg p-3">
+                            <p class="text-xs text-slate-400">Paid / Outstanding</p>
+                            <p class="font-bold text-emerald-400 mt-1">${money(totalPaid)}</p>
+                            <p class="font-bold text-brand-500 text-xs mt-1">
+                                Balance: ${money(totalOutstanding)}
+                            </p>
+                        </div>
+                    </div>
+
+                    <h4 class="font-bold text-sm pt-1">
+                        Instalment Details & Payment History
+                    </h4>
+            `;
+
+            if (instalments.length === 0) {
+                html += `
+                    <p class="text-xs text-slate-400">
+                        No instalments have been created for this student.
+                    </p>
+                `;
+            }
+
+            instalments.forEach(item => {
+                const status = String(item.status || "Unpaid");
+
+                const statusClass = status === "Paid"
+                    ? "text-emerald-400"
+                    : status === "Part Paid"
+                        ? "text-amber-400"
+                        : "text-brand-500";
+
+                html += `
+                    <div class="bg-darkbg border border-cardborder rounded-lg p-4">
+                        <div class="flex flex-wrap justify-between items-center gap-2">
+                            <strong>Instalment #${Number(item.instalment_number)} <span class="text-[10px] text-slate-500 font-normal">(ID: ${Number(item.instalment_id)})</span></strong>
+                            <span class="${statusClass} text-xs font-bold">
+                                ${escapeHTML(status)}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-3 mt-3 text-xs">
+                            <div>
+                                <p class="text-slate-400">Instalment Amount</p>
+                                <p class="mt-1">${money(item.instalment_amount)}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400">Discount</p>
+                                <p class="mt-1">${money(item.discount)}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400">Amount Paid</p>
+                                <p class="text-emerald-400 mt-1">${money(item.amount_paid)}</p>
+                            </div>
+                            <div>
+                                <p class="text-slate-400">Outstanding Balance</p>
+                                <p class="text-brand-500 mt-1">${money(item.outstanding_balance)}</p>
+                            </div>
+                        </div>
+
+                        <p class="text-xs text-slate-400 mt-3">
+                            Due Date: ${formatDate(item.due_date)}
+                        </p>
+
+                        <div class="border-t border-cardborder mt-3 pt-3">
+                            <p class="text-xs font-bold mb-2">Payment Transactions</p>
+                `;
+
+                const payments = Array.isArray(item.payments) ? item.payments : [];
+
+                if (payments.length === 0) {
+                    html += `
+                        <p class="text-xs text-slate-500">
+                            No payment transactions recorded.
+                        </p>
+                    `;
+                } else {
+                    payments.forEach(payment => {
+                        html += `
+                            <div class="text-xs border-b border-cardborder py-2 last:border-0">
+                                <div class="flex flex-wrap justify-between gap-2">
+                                    <strong>${money(payment.amount)}</strong>
+                                    <span class="text-emerald-400">
+                                        ${escapeHTML(payment.payment_status)}
+                                    </span>
+                                </div>
+                                <p class="text-slate-400 mt-1">
+                                    Transaction: ${escapeHTML(payment.transaction_id)}
+                                </p>
+                                <p class="text-slate-400">
+                                    Method: ${escapeHTML(payment.payment_method || "Not specified")}
+                                </p>
+                                <p class="text-slate-400">
+                                    Paid at: ${
+                                        payment.paid_at
+                                            ? escapeHTML(new Date(payment.paid_at).toLocaleString("en-IN"))
+                                            : "Not available"
+                                    }
+                                </p>
+                                <p class="text-slate-400">
+                                    GST: CGST ${money(payment.cgst_amount || 0)}
+                                    • SGST ${money(payment.sgst_amount || 0)}
+                                </p>
+                                ${
+                                    payment.payment_status === "SUCCESS"
+                                        ? `<button onclick="openReceipt('${escapeHTML(payment.transaction_id)}')"
+                                            class="text-brand-500 underline mt-2">View receipt</button>`
+                                        : ""
+                                }
+                            </div>
+                        `;
+                    });
+                }
+
+                html += `
+                        </div>
+                    </div>
+                `;
+            });
+
+            html += `</div>`;
+            details.innerHTML = html;
+
+        } catch (error) {
+            console.error("Ledger loading error:", error);
+
+            details.innerHTML = `
+                <div class="rounded-lg border border-red-800/50 bg-red-950/20 p-4">
+                    <p class="text-sm font-bold text-red-400">
+                        Unable to load student ledger
+                    </p>
+                    <p class="text-xs text-slate-300 mt-2">
+                        ${escapeHTML(error.message)}
+                    </p>
+                </div>
+            `;
+        }
+    }
+
+    function closeLedger() {
+        document.getElementById("ledgerModal").classList.add("hidden");
+    }
+
+    // --------------------------------------------------
+    // PARENT PORTAL - LOAD DATABASE LEDGER
+    // --------------------------------------------------
+
+    async function loadParentStudent() {
+        const studentId = document.getElementById("parentStudent").value;
+        const previousStudentId = selectedStudentId;
+
+        if (!studentId) {
+            selectedStudentId = "";
+            parentOtpVerificationToken = "";
+            parentOtpVerifiedAdmission = "";
+            selectedInstalment = null;
+            document.getElementById("parentBalance").textContent = money(0);
+            document.getElementById("parentStatus").textContent = "No student selected";
+            document.getElementById("parentInstalmentSelect").innerHTML =
+                '<option value="">No instalments available</option>';
+            document.getElementById("selectedInstalmentBalance").textContent = money(0);
+            document.getElementById("paymentAmountInput").value = "";
+            updateParentPaymentControls();
+            return;
+        }
+
+        if (previousStudentId && previousStudentId !== studentId) {
+            latestReceiptUrl = "";
+            parentOtpVerificationToken = "";
+            parentOtpVerifiedAdmission = "";
+            document.getElementById("demoOtpInput").value = "";
+            document.getElementById("otpMessage").textContent = "Verify this student's parent OTP before payment.";
+        }
+
+        selectedStudentId = studentId;
+        selectedInstalment = null;
+
+        const payButton = document.getElementById("payButton");
+        payButton.disabled = true;
+        payButton.textContent = "Loading...";
+
+        try {
+            const response = await fetch(
+                `/api/students/${encodeURIComponent(studentId)}/ledger`
+            );
+            const data = await readApiResponse(response);
+                        const student = data.student;
+            parentInstalments = Array.isArray(data.instalments)
+                ? data.instalments
+                : [];
+
+            const totalOutstanding = parentInstalments.reduce(
+                (sum, item) => sum + Math.max(0, Number(item.outstanding_balance) || 0),
+                0
+            );
+
+            document.getElementById("parentWelcome").textContent =
+                `Welcome • ${student.full_name} • ${student.batch_name}`;
+            document.getElementById("parentBatch").textContent =
+                student.batch_name || "—";
+            document.getElementById("parentBalance").textContent =
+                money(totalOutstanding);
+
+            const instalmentSelect =
+                document.getElementById("parentInstalmentSelect");
+            instalmentSelect.innerHTML = "";
+
+            if (parentInstalments.length === 0) {
+                instalmentSelect.innerHTML =
+                    '<option value="">No instalments available</option>';
+                document.getElementById("parentDueDate").textContent = "—";
+                document.getElementById("selectedInstalmentBalance").textContent =
+                    money(0);
+                document.getElementById("parentStatus").textContent =
+                    "No Instalments";
+                document.getElementById("paymentAmountInput").value = "";
+                selectedInstalment = null;
+            } else {
+                parentInstalments.forEach(item => {
+                    const balance = Math.max(
+                        0,
+                        Number(item.outstanding_balance) || 0
+                    );
+                    const option = document.createElement("option");
+                    option.value = String(item.instalment_id);
+                    option.textContent =
+                        `Instalment #${item.instalment_number} • ${item.status} • ${money(balance)}`;
+                    option.disabled = balance <= 0;
+                    instalmentSelect.appendChild(option);
+                });
+
+                const firstUnpaid = parentInstalments.find(item =>
+                    Number(item.outstanding_balance) > 0
+                );
+
+                if (firstUnpaid) {
+                    instalmentSelect.value = String(firstUnpaid.instalment_id);
+                    selectedInstalment = firstUnpaid;
+                    updateSelectedInstalmentDetails(true);
+                } else {
+                    document.getElementById("parentDueDate").textContent = "—";
+                    document.getElementById("selectedInstalmentBalance").textContent =
+                        money(0);
+                    document.getElementById("parentStatus").textContent =
+                        "Paid in Full";
+                    document.getElementById("paymentAmountInput").value = "";
+                    selectedInstalment = null;
+                }
+            }
+
+            const pendingCount = parentInstalments.filter(item =>
+                Number(item.outstanding_balance) > 0
+            ).length;
+
+            document.getElementById("parentStatus").textContent =
+                totalOutstanding > 0
+                    ? `${pendingCount} instalment(s) pending`
+                    : "Paid in Full";
+
+            renderParentReminders();
+            updateParentPaymentControls();
+
+        } catch (error) {
+            console.error("Parent portal loading error:", error);
+            selectedInstalment = null;
+            document.getElementById("parentBalance").textContent = "Error";
+            document.getElementById("parentStatus").textContent =
+                "Unable to load fee details";
+            document.getElementById("parentInstalmentSelect").innerHTML =
+                '<option value="">Could not load instalments</option>';
+            document.getElementById("selectedInstalmentBalance").textContent = "—";
+            updateParentPaymentControls();
+            showToast(error.message || "Could not load student instalment details.");
+        }
+
+        await loadParentAcademics(studentId);
+        await loadReminderHistory(studentId);
+    }
+
+    let parentInstalments = [];
+
+    function updateSelectedInstalmentDetails(resetAmount = true) {
+        const dueDate = document.getElementById("parentDueDate");
+        const balanceLabel = document.getElementById("selectedInstalmentBalance");
+        const amountInput = document.getElementById("paymentAmountInput");
+
+        if (!selectedInstalment) {
+            dueDate.textContent = "—";
+            balanceLabel.textContent = money(0);
+            amountInput.value = "";
+            amountInput.max = "0";
+            return;
+        }
+
+        const balance = Math.max(
+            0,
+            Number(selectedInstalment.outstanding_balance) || 0
+        );
+
+        dueDate.textContent = formatDate(selectedInstalment.due_date);
+        balanceLabel.textContent = money(balance);
+        amountInput.max = balance.toFixed(2);
+
+        if (resetAmount || !amountInput.value) {
+            amountInput.value = balance > 0 ? balance.toFixed(2) : "";
+        }
+    }
+
+    function selectParentInstalment() {
+        const selectedId =
+            document.getElementById("parentInstalmentSelect").value;
+
+        selectedInstalment = parentInstalments.find(item =>
+            String(item.instalment_id) === String(selectedId)
+        ) || null;
+
+        updateSelectedInstalmentDetails(true);
+        updateParentPaymentControls();
+    }
+
+    function updateParentPaymentControls() {
+        const payButton = document.getElementById("payButton");
+        const amountInput = document.getElementById("paymentAmountInput");
+        const hasBalance = Boolean(
+            selectedInstalment &&
+            Number(selectedInstalment.outstanding_balance) > 0
+        );
+
+        if (paymentInProgress) {
+            payButton.disabled = true;
+            payButton.textContent = "Processing Payment...";
+            amountInput.disabled = true;
+            return;
+        }
+
+        const otpVerified = parentOtpVerifiedAdmission === selectedStudentId && Boolean(parentOtpVerificationToken);
+        payButton.disabled = !hasBalance || !otpVerified;
+        payButton.textContent = !hasBalance
+            ? "Fully Paid"
+            : (otpVerified ? "Simulate Payment (Demo)" : "Verify OTP to Enable Payment");
+        amountInput.disabled = !hasBalance || !otpVerified;
+    }
+
+    // --------------------------------------------------
+    // DATABASE-CONNECTED DEMO PAYMENT
+    // --------------------------------------------------
+
+    async function simulatePayment() {
+        if (paymentInProgress) return;
+
+        if (!selectedInstalment) {
+            showToast("Please select an instalment with outstanding dues.");
+            return;
+        }
+
+        if (parentOtpVerifiedAdmission !== selectedStudentId || !parentOtpVerificationToken) {
+            showToast("Generate and verify the demo parent OTP before payment.");
+            return;
+        }
+
+        const instalmentId = Number(selectedInstalment.instalment_id);
+        const balance = Number(selectedInstalment.outstanding_balance);
+        const amountInput = document.getElementById("paymentAmountInput");
+        const methodSelect = document.getElementById("paymentMethodSelect");
+        const amount = Number(amountInput.value);
+        const paymentMethod = methodSelect.value;
+
+        if (!Number.isInteger(instalmentId) || instalmentId <= 0) {
+            showToast("The selected instalment ID is invalid.");
+            return;
+        }
+
+        if (!Number.isFinite(balance) || balance <= 0) {
+            showToast("This instalment has no outstanding balance.");
+            return;
+        }
+
+        if (
+            !Number.isFinite(amount) ||
+            amount <= 0 ||
+            Math.abs(amount * 100 - Math.round(amount * 100)) > 0.000001
+        ) {
+            showToast("Enter a valid amount with up to two decimal places.");
+            amountInput.focus();
+            return;
+        }
+
+        if (amount > balance + 0.000001) {
+            showToast(
+                "Payment cannot exceed this instalment's outstanding balance of " +
+                money(balance) + "."
+            );
+            amountInput.focus();
+            return;
+        }
+
+        if (!ALLOWED_PAYMENT_METHODS.includes(paymentMethod)) {
+            showToast("Please select a valid payment method.");
+            return;
+        }
+
+        paymentInProgress = true;
+        updateParentPaymentControls();
+
+        try {
+            const response = await fetch("/api/payments", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    instalment_id: instalmentId,
+                    admission_number: selectedStudentId,
+                    otp_verification_token: parentOtpVerificationToken,
+                    amount: Number(amount.toFixed(2)),
+                    payment_method: paymentMethod,
+                    gateway_reference:
+                        "DEMO-" + paymentMethod + "-" + Date.now()
+                })
+            });
+
+            const data = await readApiResponse(response);
+
+            if (!data.receipt_url) {
+                throw new Error(
+                    "Payment was recorded, but the server did not return a receipt URL."
+                );
+            }
+
+            latestReceiptUrl = data.receipt_url;
+            showToast(
+                `Payment of ${money(amount)} recorded via ${paymentMethod}.`
+            );
+
+            const loaded = await loadStudents();
+
+            if (loaded) {
+                renderStudents();
+                document.getElementById("parentStudent").value =
+                    selectedStudentId;
+                await loadParentStudent();
+            }
+
+        } catch (error) {
+            console.error("Payment request error:", error);
+            showToast(error.message || "Payment could not be recorded.");
+
+        } finally {
+            paymentInProgress = false;
+            updateParentPaymentControls();
+        }
+    }
+
+    // --------------------------------------------------
+    // REMINDER SIMULATION
+    // --------------------------------------------------
+
+    async function sendReminder(id) {
+        const student = getStudent(id);
+
+        if (!student) return;
+
+        if (student.total - student.paid <= 0) {
+            showToast("Payment complete. No reminder needed.");
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/reminders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    admission_number: student.id,
+                    language: 'Hindi / English'
+                })
+            });
+
+            const data = await readApiResponse(response);
+            const r = data.reminder;
+
+            reminderHistory.unshift({
+                studentId: r.admission_number,
+                name: student.name,
+                amount: r.amount,
+                time: new Date(r.created_at).toLocaleString('en-IN'),
+                language: r.language,
+                status: r.status
+            });
+
+            renderReminderLog();
+            renderParentReminders();
+            showToast(data.message);
+
+        } catch (error) {
+            showToast(error.message || 'Reminder could not be recorded.');
+        }
+    }
+
+    function renderReminderLog() {
+        const container = document.getElementById("reminderLog");
+
+        if (reminderHistory.length === 0) {
+            container.innerHTML =
+                '<p class="text-xs text-slate-500">No new demo reminders generated.</p>';
+            return;
+        }
+
+        container.innerHTML = reminderHistory.map(record => `
+            <div class="rounded-lg bg-darkbg border border-cardborder p-3">
+                <div class="flex flex-wrap justify-between gap-2">
+                    <strong class="text-xs">${escapeHTML(record.name)}</strong>
+                    <span class="text-[10px] text-amber-400">
+                        ${escapeHTML(record.status)}
+                    </span>
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">
+                    ${escapeHTML(record.language)}
+                    • Outstanding ${money(record.amount)}
+                </p>
+                <p class="text-[10px] text-slate-500 mt-1">
+                    ${escapeHTML(record.time)}
+                </p>
+            </div>
+        `).join("");
+    }
+
+    function renderParentReminders() {
+        const container = document.getElementById("parentReminderLog");
+
+        const records = reminderHistory.filter(
+            record => record.studentId === selectedStudentId
+        );
+
+        if (records.length === 0) {
+            container.textContent =
+                "No reminder history available in this demo session.";
+            return;
+        }
+
+        container.innerHTML = records.map(record => `
+            <div class="border-b border-cardborder py-3">
+                <p class="font-semibold text-slate-200">
+                    Fee reminder generated
+                </p>
+                <p class="text-slate-400 mt-1">
+                    ${escapeHTML(record.language)}
+                    • ${money(record.amount)}
+                    • ${escapeHTML(record.time)}
+                </p>
+                <p class="text-amber-400 text-[10px] mt-1">
+                    Simulated only — no real message was sent.
+                </p>
+            </div>
+        `).join("");
+    }
+
+    async function loadReminderHistory(admission) {
+        try {
+            const response = await fetch('/api/reminders?admission_number=' + encodeURIComponent(admission));
+            const data = await readApiResponse(response);
+            const existing = reminderHistory.filter(item => item.studentId !== admission);
+            const loaded = (data.reminders || []).map(item => ({
+                studentId: item.admission_number,
+                name: getStudent(item.admission_number)?.name || item.admission_number,
+                amount: item.amount,
+                time: item.created_at ? new Date(item.created_at).toLocaleString('en-IN') : '',
+                language: item.language,
+                status: item.status
+            }));
+            reminderHistory.splice(0, reminderHistory.length, ...existing, ...loaded);
+            renderReminderLog();
+            renderParentReminders();
+        } catch (error) {
+            console.warn('Reminder history could not be loaded:', error);
+        }
+    }
+
+    // --------------------------------------------------
+    // UNMATCHED PAYMENT RECONCILIATION
+    // --------------------------------------------------
+
+    async function addUnmatchedPayment() {
+        const payload = {
+            external_reference: document.getElementById('unmatchedReference').value.trim(),
+            payer_name: document.getElementById('unmatchedPayer').value.trim(),
+            amount: document.getElementById('unmatchedAmount').value,
+            payment_date: document.getElementById('unmatchedDate').value || undefined
+        };
+        try {
+            const response = await fetch('/api/payments/unmatched', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await readApiResponse(response);
+            document.getElementById('unmatchedReference').value = '';
+            document.getElementById('unmatchedPayer').value = '';
+            document.getElementById('unmatchedAmount').value = '';
+            showToast(data.message);
+            await loadUnmatchedPayments();
+        } catch (error) {
+            showToast(error.message || 'Could not add unmatched payment.');
+        }
+    }
+
+    async function loadUnmatchedPayments() {
+        const box = document.getElementById('unmatchedPaymentQueue');
+        if (!box) return;
+        try {
+            const response = await fetch('/api/payments/unmatched');
+            const data = await readApiResponse(response);
+            const items = data.payments || [];
+            box.innerHTML = items.length ? items.map(item => `
+                <div class="rounded-lg bg-darkbg border border-cardborder p-3 space-y-2">
+                    <div class="flex flex-wrap justify-between gap-2">
+                        <strong>${escapeHTML(item.external_reference)}</strong>
+                        <strong>${money(item.amount)}</strong>
+                    </div>
+                    <p class="text-slate-400">${escapeHTML(item.payer_name || 'Payer not identified')} · ${escapeHTML(formatDate(item.payment_date))}</p>
+                    <div class="flex flex-wrap gap-2">
+                        <input id="matchInstalment-${Number(item.id)}" type="number" min="1" placeholder="Target instalment ID" class="min-w-0 flex-1 bg-cardbg border border-cardborder rounded-lg p-2 text-xs" />
+                        <button onclick="matchUnmatchedPayment(${Number(item.id)})" class="px-3 py-2 rounded-lg bg-brand-500 text-xs font-bold">Match Payment</button>
+                    </div>
+                </div>
+            `).join('') : '<p class="text-slate-500">No unmatched payments in the queue.</p>';
+        } catch (error) {
+            box.textContent = error.message;
+        }
+    }
+
+    async function matchUnmatchedPayment(id) {
+        const instalmentId = Number(document.getElementById(`matchInstalment-${id}`).value);
+        if (!Number.isInteger(instalmentId) || instalmentId <= 0) {
+            showToast('Enter a valid target instalment ID. Open the student ledger to view instalment IDs.');
+            return;
+        }
+        try {
+            const response = await fetch(`/api/payments/unmatched/${id}/match`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instalment_id: instalmentId, payment_method: 'BANK_TRANSFER' })
+            });
+            const data = await readApiResponse(response);
+            showToast(data.message);
+            await loadUnmatchedPayments();
+            await loadStudents();
+            renderStudents();
+            await loadDashboardSummary();
+        } catch (error) {
+            showToast(error.message || 'Could not match payment.');
+        }
+    }
+
+    // --------------------------------------------------
+    // CSV EXPORT
+    // --------------------------------------------------
+
+    function exportCSV() {
+        const headers = [
+            "Student ID",
+            "Student Name",
+            "Batch",
+            "Due Date",
+            "Total Amount",
+            "Paid Amount",
+            "Outstanding Balance",
+            "Status",
+            "Days Overdue"
+        ];
+
+        const rows = students.map(student => [
+            student.id,
+            student.name,
+            student.batch,
+            student.dueDate,
+            student.total,
+            student.paid,
+            student.total - student.paid,
+            getStatus(student),
+            getDaysOverdue(student)
+        ]);
+
+        const csv = [headers, ...rows]
+            .map(row => row.map(value =>
+                '"' + String(value ?? "").replace(/"/g, '""') + '"'
+            ).join(","))
+            .join("\r\n");
+
+        const blob = new Blob(["\uFEFF" + csv], {
+            type: "text/csv;charset=utf-8;"
+        });
+
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+
+        link.href = url;
+        link.download = "coaching-fee-ledger-demo.csv";
+        link.click();
+
+        URL.revokeObjectURL(url);
+        showToast("Demo fee report exported as CSV.");
+    }
+
+    // --------------------------------------------------
+    // CENTRE AND BATCH DASHBOARD
+    // --------------------------------------------------
+
+    async function loadDashboardSummary() {
+        const box = document.getElementById('centreBatchSummary');
+
+        if (!box) return;
+
+        try {
+            const response = await fetch('/api/dashboard/summary');
+            const data = await readApiResponse(response);
+
+            const section = (title, items, key) => `
+                <div>
+                    <p class="font-bold mb-2">${title}</p>
+                    ${
+                        items.length
+                            ? items.map(item => `
+                                <div class="flex justify-between gap-2 border-b border-cardborder py-2">
+                                    <span>
+                                        ${escapeHTML(item[key])} · ${item.students} students
+                                    </span>
+                                    <strong>${money(item.outstanding)}</strong>
+                                </div>
+                            `).join('')
+                            : '<p class="text-slate-500">No records</p>'
+                    }
+                </div>
+            `;
+
+            const ageing = (data.ageing || []).map(item => `
+                <div class="flex justify-between gap-2 border-b border-cardborder py-2">
+                    <span>${escapeHTML(item.bucket)} · ${item.students} students</span>
+                    <strong>${money(item.outstanding)}</strong>
+                </div>
+            `).join('');
+
+            box.innerHTML =
+                section('Centres', data.centres || [], 'centre') +
+                section('Batches', data.batches || [], 'batch') +
+                `<div><p class="font-bold mb-2">Ageing</p>${ageing || '<p class="text-slate-500">No outstanding dues</p>'}</div>`;
+
+        } catch (error) {
+            box.textContent = error.message;
+        }
+    }
+
+    // --------------------------------------------------
+    // DEMO PARENT OTP
+    // --------------------------------------------------
+
+    async function requestDemoOtp() {
+        const admission = document.getElementById('parentStudent').value;
+        const msg = document.getElementById('otpMessage');
+
+        if (!admission) {
+            msg.textContent = 'Select a student first.';
+            return;
+        }
+
+        parentOtpVerificationToken = "";
+        parentOtpVerifiedAdmission = "";
+        updateParentPaymentControls();
+
+        try {
+            const response = await fetch('/api/parent/demo-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    admission_number: admission
+                })
+            });
+
+            const data = await readApiResponse(response);
+
+            msg.textContent =
+                data.message + ' Demo OTP: ' + data.demo_otp +
+                ' (valid 5 minutes)';
+
+        } catch (error) {
+            msg.textContent = error.message;
+        }
+    }
+
+    async function verifyDemoOtp() {
+        const admission = document.getElementById('parentStudent').value;
+        const otp = document.getElementById('demoOtpInput').value;
+        const msg = document.getElementById('otpMessage');
+
+        try {
+            const response = await fetch('/api/parent/verify-demo-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    admission_number: admission,
+                    otp: otp
+                })
+            });
+
+            const data = await readApiResponse(response);
+            if (!data.verified || !data.verification_token) {
+                throw new Error("OTP verification did not return a valid demo session token.");
+            }
+            parentOtpVerificationToken = data.verification_token;
+            parentOtpVerifiedAdmission = admission;
+            msg.textContent = data.message + " Payment is now enabled for this student.";
+            updateParentPaymentControls();
+
+        } catch (error) {
+            parentOtpVerificationToken = "";
+            parentOtpVerifiedAdmission = "";
+            msg.textContent = error.message;
+            updateParentPaymentControls();
+        }
+    }
+
+    // --------------------------------------------------
+    // BULK ATTENDANCE AND TEST SCORE CSV IMPORT
+    // --------------------------------------------------
+
+    async function uploadAcademicCsv(kind) {
+        const input = document.getElementById(
+            kind === 'attendance' ? 'attendanceCsv' : 'scoresCsv'
+        );
+
+        if (!input.files.length) {
+            showToast('Choose a CSV file first.');
+            return;
+        }
+
+        const form = new FormData();
+        form.append('file', input.files[0]);
+
+        try {
+            const response = await fetch('/api/import/' + kind, {
+                method: 'POST',
+                body: form
+            });
+
+            const data = await readApiResponse(response);
+            showToast(data.message);
+
+            if (selectedStudentId) {
+                await loadParentAcademics(selectedStudentId);
+            }
+
+        } catch (error) {
+            showToast(error.message || 'CSV import failed.');
+        }
+    }
+
+    // --------------------------------------------------
+    // SCHEDULED REMINDER GENERATION
+    // --------------------------------------------------
+
+    async function runScheduledReminders() {
+        try {
+            const response = await fetch('/api/reminders/run-due', {
+                method: 'POST'
+            });
+
+            const data = await readApiResponse(response);
+            showToast(data.message);
+            if (selectedStudentId) await loadReminderHistory(selectedStudentId);
+
+        } catch (error) {
+            showToast(error.message);
+        }
+    }
+
+    // --------------------------------------------------
+    // REFUND REQUEST SUBMISSION
+    // --------------------------------------------------
+
+    async function submitRefundRequest() {
+        const admission = document.getElementById('parentStudent').value;
+
+        const payload = {
+            admission_number: admission,
+            amount_paid: document.getElementById('refundPaid').value,
+            total_course_days: document.getElementById('refundDays').value,
+            attended_days: document.getElementById('refundAttended').value,
+            deductions: document.getElementById('refundDeductions').value || 0
+        };
+
+        try {
+            const response = await fetch('/api/refunds/requests', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await readApiResponse(response);
+
+            document.getElementById('refundResult').textContent =
+                `Case #${data.refund_case.id}: ` +
+                `${money(data.refund_case.estimated_refund)} estimated; ` +
+                `review deadline ${formatDate(data.refund_case.review_deadline.slice(0, 10))}. ` +
+                `Pending staff review; no refund issued.`;
+
+        } catch (error) {
+            document.getElementById('refundResult').textContent = error.message;
+        }
+    }
+
+    // --------------------------------------------------
+    // COUNSELLOR FALSE-FLAG REVIEW
+    // --------------------------------------------------
+
+    async function markFalseFlag(taskId) {
+        try {
+            const response = await fetch(
+                `/api/counsellor/tasks/${taskId}/false-flag`,
+                { method: 'POST' }
+            );
+
+            const data = await readApiResponse(response);
+            document.getElementById('counsellorResult').textContent =
+                data.message;
+
+        } catch (error) {
+            showToast(error.message);
+        }
+    }
+
+    // --------------------------------------------------
+    // REFUND CALCULATOR
+    // --------------------------------------------------
+
+    async function estimateRefund() {
+        const payload = {
+            amount_paid: document.getElementById('refundPaid').value,
+            total_course_days: document.getElementById('refundDays').value,
+            attended_days: document.getElementById('refundAttended').value,
+            deductions: document.getElementById('refundDeductions').value || 0
+        };
+
+        try {
+            const response = await fetch('/api/refunds/estimate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await readApiResponse(response);
+
+            document.getElementById('refundResult').innerHTML =
+                '<strong>Estimated refund: ' +
+                money(data.estimated_refund) +
+                '</strong><p class="mt-2 text-slate-400">' +
+                escapeHTML(data.policy_note) +
+                '</p>';
+
+        } catch (error) {
+            document.getElementById('refundResult').textContent = error.message;
+        }
+    }
+
+    // --------------------------------------------------
+    // AI DROPOUT RISK - COUNSELLOR TASK
+    // --------------------------------------------------
+
+    async function createCounsellorTask() {
+        const admission = document.getElementById('riskStudent').value;
+
+        if (!admission) {
+            showToast('Select a student.');
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/counsellor/tasks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    admission_number: admission
+                })
+            });
+
+            const data = await readApiResponse(response);
+            const task = data.task;
+
+            document.getElementById('counsellorResult').innerHTML = `
+                <p>
+                    ${escapeHTML(task.risk_level)} risk
+                    (${Number(task.risk_score)}/100):
+                    ${escapeHTML(task.reason)}
+                </p>
+                <button
+                    onclick="markFalseFlag(${Number(task.id)})"
+                    class="mt-2 underline text-amber-400">
+                    Mark as false flag
+                </button>
+            `;
+
+            showToast(data.message);
+
+        } catch (error) {
+            showToast(error.message);
+        }
+    }
+
+    // --------------------------------------------------
+    // PARENT ACADEMIC RECORDS
+    // --------------------------------------------------
+
+    async function loadParentAcademics(admission) {
+        try {
+            const response = await fetch(
+                '/api/academics/' + encodeURIComponent(admission)
+            );
+
+            const data = await readApiResponse(response);
+            const attendance = data.attendance_summary;
+
+            document.getElementById('parentAttendance').innerHTML =
+                attendance.total
+                    ? `
+                        Attendance:
+                        <strong>${attendance.percentage}%</strong>
+                        (${attendance.present}/${attendance.total} present)
+                        <div class="mt-2 space-y-1">
+                            ${data.attendance.slice(0, 6).map(item => `
+                                <p>
+                                    ${escapeHTML(formatDate(item.date))}
+                                    · ${escapeHTML(item.status)}
+                                </p>
+                            `).join('')}
+                        </div>
+                    `
+                    : 'No attendance records uploaded yet.';
+
+            document.getElementById('parentTests').innerHTML =
+                data.tests.length
+                    ? data.tests.slice(0, 8).map(item => `
+                        <p class="py-1">
+                            ${escapeHTML(item.test_name)}
+                            · ${escapeHTML(item.subject)}:
+                            <strong>${item.score}/${item.max_score}</strong>
+                            <span class="text-slate-500">
+                                ${escapeHTML(formatDate(item.date))}
+                            </span>
+                        </p>
+                    `).join('')
+                    : 'No test scores uploaded yet.';
+
+        } catch (error) {
+            document.getElementById('parentAttendance').textContent =
+                'Academic records are not available.';
+
+            document.getElementById('parentTests').textContent =
+                'Academic records are not available.';
+        }
+    }
+
+    // --------------------------------------------------
+    // INITIALIZE APPLICATION
+    // --------------------------------------------------
+
+    document.addEventListener("DOMContentLoaded", async () => {
+        const loaded = await loadStudents();
+
+        if (loaded) {
+            renderStudents();
+
+            const parentSelect = document.getElementById("parentStudent");
+
+            if (parentSelect.value) {
+                await loadParentStudent();
+            }
+        }
+
+        switchView("accounts");
+        loadDashboardSummary();
+        loadUnmatchedPayments();
+    });
+</script>
+
+</body>
+</html>

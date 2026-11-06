@@ -1,0 +1,6 @@
+admission_number,record_date,attendance_status,remarks
+STU-0219,2026-11-01,PRESENT,Attended class
+STU-0412,2026-11-01,ABSENT,Absent due to personal reason
+STU-0587,2026-11-01,LATE,Arrived late to class
+STU-0219,2026-11-02,PRESENT,Attended class
+STU-0412,2026-11-02,LEAVE,Approved leave

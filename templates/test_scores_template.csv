@@ -1,0 +1,4 @@
+admission_number,test_name,test_date,subject,score,max_score,remarks
+STU-0219,Weekly Test 1,2026-11-01,Mathematics,85,100,Good performance
+STU-0412,Weekly Test 1,2026-11-01,Physics,78,100,Needs improvement
+STU-0587,Weekly Test 1,2026-11-01,Chemistry,92,100,Excellent performance
