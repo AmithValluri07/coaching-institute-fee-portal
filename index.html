@@ -718,27 +718,303 @@
     // LANGUAGE TOGGLE
     // --------------------------------------------------
 
-    function toggleLanguage() {
-        currentLang = currentLang === "en" ? "hi" : "en";
-        document.documentElement.lang = currentLang;
+    // --------------------------------------------------
+    // COMPLETE ENGLISH / HINDI LANGUAGE SYSTEM
+    // --------------------------------------------------
 
-        document.getElementById("langBtn").textContent =
-            currentLang === "en" ? "हिन्दी / English" : "English / हिन्दी";
+    const hindiTranslations = {
+        "Company A Coaching": "कंपनी A कोचिंग",
+        "Jaipur • Fee Management System": "जयपुर • फीस प्रबंधन प्रणाली",
+        "Parent Portal": "अभिभावक पोर्टल",
+    "Accounts Dashboard": "अकाउंट्स डैशबोर्ड",
+    "Database-connected prototype:": "डेटाबेस से जुड़ा प्रोटोटाइप:",
+    "Student, fee and payment records are stored in PostgreSQL through the Flask API.": "छात्र, फीस और भुगतान रिकॉर्ड Flask API के माध्यम से PostgreSQL में संग्रहीत हैं।",
+    "Payments and OTP are demo-only. No real payment gateway or SMS/WhatsApp/email provider is connected.": "भुगतान और OTP केवल डेमो के लिए हैं। कोई वास्तविक पेमेंट गेटवे या SMS/WhatsApp/ईमेल सेवा जुड़ी नहीं है।",
+    "Accounts Command Center": "अकाउंट्स कंट्रोल सेंटर",
+    "Multi-centre fee tracking • 4 centres • 2,600 students": "बहु-केंद्र फीस ट्रैकिंग • 4 केंद्र • 2,600 छात्र",
+    "↓ Export Fee Report (CSV)": "↓ फीस रिपोर्ट डाउनलोड करें (CSV)",
+    "Annual Billed Revenue": "वार्षिक बिल की गई आय",
+    "Client-provided business estimate": "क्लाइंट द्वारा दिया गया व्यावसायिक अनुमान",
+    "Instalment Value Overdue 60+ Days": "60+ दिनों से बकाया किस्तों का मूल्य",
+    "Baseline reported in client brief": "क्लाइंट ब्रीफ में दी गई आधार स्थिति",
+    "Collection Improvement Target": "कलेक्शन सुधार लक्ष्य",
+    "60+ day overdue target": "60+ दिनों के बकाया का लक्ष्य",
+    "Demo Students": "डेमो छात्र",
+    "Records loaded from PostgreSQL": "PostgreSQL से लोड किए गए रिकॉर्ड",
+    "Sample Collection Summary": "नमूना फीस संग्रह सारांश",
+    "Based on the demo records": "डेमो रिकॉर्ड पर आधारित",
+    "Total Instalment Value": "कुल किस्त राशि",
+    "Total Collected": "कुल प्राप्त राशि",
+    "Outstanding Balance": "बकाया राशि",
+    "Student Fee Ledgers": "छात्र फीस लेजर",
+    "Search and view student records from PostgreSQL": "PostgreSQL से छात्र रिकॉर्ड खोजें और देखें",
+    "Search student or ID...": "छात्र या ID खोजें...",
+    "Student": "छात्र",
+    "Batch": "बैच",
+    "Due Date": "देय तिथि",
+    "Total / Paid": "कुल / भुगतान",
+    "Balance": "शेष राशि",
+    "Status": "स्थिति",
+    "Actions": "कार्रवाई",
+    "No matching student records found.": "कोई मेल खाने वाला छात्र रिकॉर्ड नहीं मिला।",
+    "Reminder Management": "रिमाइंडर प्रबंधन",
+    "Send a simulated bilingual reminder for a selected student's outstanding balance.": "चयनित छात्र की बकाया राशि के लिए द्विभाषी डेमो रिमाइंडर भेजें।",
+    "Generate Due-Date Reminder Records": "देय तिथि रिमाइंडर रिकॉर्ड बनाएं",
+    "No new demo reminders generated.": "कोई नया डेमो रिमाइंडर नहीं बनाया गया।",
+    "AI Dropout Risk Monitoring": "AI ड्रॉपआउट जोखिम निगरानी",
+    "Risk assessment is intended to create counsellor tasks only.": "जोखिम मूल्यांकन केवल काउंसलर कार्य बनाने के लिए है।",
+    "It must never trigger fee penalties or automatic parent messages.": "इससे कभी भी फीस जुर्माना या स्वचालित अभिभावक संदेश नहीं भेजे जाने चाहिए।",
+    "Counsellor review workflow": "काउंसलर समीक्षा प्रक्रिया",
+    "Explainable demo heuristic. Flags create review tasks only; they never change fees or message parents.": "समझाने योग्य डेमो नियम। फ्लैग केवल समीक्षा कार्य बनाते हैं; वे फीस या अभिभावक संदेश नहीं बदलते।",
+    "Centre & Batch Outstanding Summary": "केंद्र और बैच बकाया सारांश",
+    "Refresh": "रिफ्रेश करें",
+    "Loading summaries...": "सारांश लोड हो रहे हैं...",
+    "Academic CSV Upload": "शैक्षणिक CSV अपलोड",
+    "Upload attendance and test scores using the CSV templates described in README.md.": "README.md में दिए गए CSV टेम्पलेट का उपयोग करके उपस्थिति और टेस्ट स्कोर अपलोड करें।",
+    "Attendance CSV": "उपस्थिति CSV",
+    "Import Attendance": "उपस्थिति आयात करें",
+    "Test Scores CSV": "टेस्ट स्कोर CSV",
+    "Import Test Scores": "टेस्ट स्कोर आयात करें",
+    "Refund Estimator": "रिफंड अनुमानक",
+    "Illustrative pro-rata estimate. Final approval must follow the institute's published written policy.": "उदाहरण के आधार पर आनुपातिक अनुमान। अंतिम स्वीकृति संस्थान की लिखित नीति के अनुसार होगी।",
+    "Amount paid (₹)": "भुगतान की गई राशि (₹)",
+    "Total course days": "कोर्स के कुल दिन",
+    "Attended days": "उपस्थित दिन",
+    "Approved deductions ₹": "स्वीकृत कटौती ₹",
+    "Calculate Estimate": "अनुमान की गणना करें",
+    "Submit for Staff Review": "स्टाफ समीक्षा के लिए भेजें",
+    "Counsellor Support Flags": "काउंसलर सहायता फ्लैग",
+    "Explainable overdue/attendance heuristic. It creates a task only; no fee action or parent message.": "समझाने योग्य बकाया/उपस्थिति नियम। यह केवल कार्य बनाता है; फीस कार्रवाई या अभिभावक संदेश नहीं भेजता।",
+    "Assess & Create Task": "मूल्यांकन करें और कार्य बनाएं",
+    "Exports": "एक्सपोर्ट",
+    "Download successful payment receipts in a Tally-oriented CSV layout.": "सफल भुगतान रसीदें Tally CSV प्रारूप में डाउनलोड करें।",
+    "Download Tally CSV": "Tally CSV डाउनलोड करें",
+    "Download Payment CSV": "भुगतान CSV डाउनलोड करें",
+    "Tally export includes successful receipts. Payment CSV includes all recorded payment statuses for reconciliation. Confirm ledger mapping and tax treatment before importing into live Tally.": "Tally एक्सपोर्ट में सफल रसीदें शामिल हैं। Payment CSV में मिलान के लिए सभी भुगतान स्थितियां शामिल हैं। लाइव Tally में आयात करने से पहले लेजर मैपिंग और टैक्स नियमों की पुष्टि करें।",
+    "Unmatched Bank / UPI Payments": "बिना मिलान वाले बैंक / UPI भुगतान",
+    "Record incoming credits that are not yet linked to a student instalment, then reconcile them to the correct instalment.": "ऐसे प्राप्त भुगतानों को रिकॉर्ड करें जो अभी किसी छात्र की किस्त से जुड़े नहीं हैं, फिर उन्हें सही किस्त से मिलाएं।",
+    "Bank / UPI reference": "बैंक / UPI संदर्भ",
+    "Payer name (optional)": "भुगतानकर्ता का नाम (वैकल्पिक)",
+    "Amount ₹": "राशि ₹",
+    "Add to Unmatched Queue": "बिना मिलान वाली सूची में जोड़ें",
+    "Refresh Queue": "सूची रिफ्रेश करें",
+    "Demo parent account": "डेमो अभिभावक खाता",
+    "Select demo student": "डेमो छात्र चुनें",
+    "Loading students...": "छात्र लोड हो रहे हैं...",
+    "Demo Parent Verification": "डेमो अभिभावक सत्यापन",
+    "Demo only: OTP is displayed on screen; no SMS is sent. Production requires verified guardian contact details and parental consent.": "केवल डेमो: OTP स्क्रीन पर दिखाया जाता है; कोई SMS नहीं भेजा जाता। वास्तविक उपयोग के लिए सत्यापित अभिभावक संपर्क विवरण और सहमति आवश्यक है।",
+    "Generate Demo OTP": "डेमो OTP बनाएं",
+    "Verify": "सत्यापित करें",
+    "Total Outstanding Dues": "कुल बकाया राशि",
+    "Select Instalment": "किस्त चुनें",
+    "Loading instalments...": "किस्तें लोड हो रही हैं...",
+    "Selected Instalment Balance:": "चयनित किस्त की शेष राशि:",
+    "Enter Payment Amount (₹)": "भुगतान राशि दर्ज करें (₹)",
+    "Enter amount": "राशि दर्ज करें",
+    "You can pay the full instalment balance or a smaller amount.": "आप पूरी किस्त की राशि या उससे कम राशि का भुगतान कर सकते हैं।",
+    "Select Payment Method": "भुगतान का तरीका चुनें",
+    "Credit / Debit Card": "क्रेडिट / डेबिट कार्ड",
+    "Net Banking": "नेट बैंकिंग",
+    "Cash (At Institute Counter)": "नकद (संस्थान काउंटर पर)",
+    "Bank Transfer (NEFT/RTGS)": "बैंक ट्रांसफर (NEFT/RTGS)",
+    "Other": "अन्य",
+    "Simulate Payment (Demo)": "डेमो भुगतान करें",
+    "View / Download Payment Receipt": "भुगतान रसीद देखें / डाउनलोड करें",
+    "Attendance": "उपस्थिति",
+    "Loading attendance...": "उपस्थिति लोड हो रही है...",
+    "Test Performance": "टेस्ट प्रदर्शन",
+    "Loading test scores...": "टेस्ट स्कोर लोड हो रहे हैं...",
+    "Reminder History": "रिमाइंडर इतिहास",
+    "No reminder history available in this demo session.": "इस डेमो सत्र में कोई रिमाइंडर इतिहास उपलब्ध नहीं है।",
+    "Student Ledger Details": "छात्र लेजर विवरण",
+    "Close": "बंद करें",
+    "Loading fee ledger from PostgreSQL...": "PostgreSQL से फीस लेजर लोड हो रहा है...",
+    "Admission Number": "प्रवेश संख्या",
+    "Student Name": "छात्र का नाम",
+    "Number of Instalments": "किस्तों की संख्या",
+    "Total Fee": "कुल फीस",
+    "Account Discount": "खाता छूट",
+    "Final Fee": "अंतिम फीस",
+    "Paid / Outstanding": "भुगतान / बकाया",
+    "Instalment Details & Payment History": "किस्त विवरण और भुगतान इतिहास",
+    "No instalments have been created for this student.": "इस छात्र के लिए कोई किस्त नहीं बनाई गई है।",
+    "Instalment Amount": "किस्त राशि",
+    "Discount": "छूट",
+    "Amount Paid": "भुगतान की गई राशि",
+    "Outstanding Balance": "बकाया राशि",
+    "Payment Transactions": "भुगतान लेनदेन",
+    "No payment transactions recorded.": "कोई भुगतान लेनदेन रिकॉर्ड नहीं किया गया।",
+    "Not specified": "निर्दिष्ट नहीं",
+    "Not available": "उपलब्ध नहीं",
+    "View receipt": "रसीद देखें",
+    "Unable to load student ledger": "छात्र लेजर लोड नहीं हो सका",
+    "No student selected": "कोई छात्र नहीं चुना गया",
+    "No instalments available": "कोई किस्त उपलब्ध नहीं है",
+    "Verify this student's parent OTP before payment.": "भुगतान से पहले इस छात्र का अभिभावक OTP सत्यापित करें।",
+    "Loading...": "लोड हो रहा है...",
+    "No Instalments": "कोई किस्त नहीं",
+    "Paid in Full": "पूरा भुगतान हो गया",
+    "Unable to load fee details": "फीस विवरण लोड नहीं हो सका",
+    "Could not load instalments": "किस्तें लोड नहीं हो सकीं",
+    "Processing Payment...": "भुगतान प्रक्रिया जारी है...",
+    "Fully Paid": "पूरा भुगतान हो गया",
+    "Verify OTP to Enable Payment": "भुगतान शुरू करने के लिए OTP सत्यापित करें",
+    "Please select an instalment with outstanding dues.": "कृपया बकाया राशि वाली किस्त चुनें।",
+    "Generate and verify the demo parent OTP before payment.": "भुगतान से पहले डेमो अभिभावक OTP बनाएं और सत्यापित करें।",
+    "The selected instalment ID is invalid.": "चयनित किस्त ID अमान्य है।",
+    "This instalment has no outstanding balance.": "इस किस्त की कोई बकाया राशि नहीं है।",
+    "Enter a valid amount with up to two decimal places.": "दो दशमलव स्थानों तक की वैध राशि दर्ज करें।",
+    "Please select a valid payment method.": "कृपया भुगतान का वैध तरीका चुनें।",
+    "Payment complete. No reminder needed.": "भुगतान पूरा हो गया है। रिमाइंडर की आवश्यकता नहीं है।",
+    "No new demo reminders generated.": "कोई नया डेमो रिमाइंडर नहीं बनाया गया।",
+    "Fee reminder generated": "फीस रिमाइंडर बनाया गया",
+    "Simulated only — no real message was sent.": "केवल डेमो — कोई वास्तविक संदेश नहीं भेजा गया।",
+    "Payer not identified": "भुगतानकर्ता की पहचान नहीं हुई",
+    "Target instalment ID": "लक्षित किस्त ID",
+    "Match Payment": "भुगतान मिलाएं",
+    "No unmatched payments in the queue.": "सूची में कोई बिना मिलान वाला भुगतान नहीं है।"
+};
 
-        document.querySelectorAll("[data-i18n]").forEach(element => {
-            const key = element.dataset.i18n;
+const originalTextNodes = new WeakMap();
+const originalAttributes = new WeakMap();
 
-            if (translations[currentLang][key]) {
-                element.textContent = translations[currentLang][key];
+function translateTextValue(value) {
+    const original = String(value);
+    const trimmed = original.trim();
+
+    if (!trimmed) return original;
+
+    let translated = hindiTranslations[trimmed];
+
+    if (!translated) {
+        translated = trimmed
+            .replace(/^Welcome • /, "स्वागत है • ")
+            .replace(/^Welcome, /, "स्वागत है, ")
+            .replace(/^Balance: /, "शेष राशि: ")
+            .replace(/^Due Date: /, "देय तिथि: ")
+            .replace(/^Transaction: /, "लेनदेन: ")
+            .replace(/^Method: /, "तरीका: ")
+            .replace(/^Paid at: /, "भुगतान समय: ")
+            .replace(/^GST: CGST /, "GST: CGST ")
+            .replace(/^Instalment #/, "किस्त संख्या ")
+            .replace(/^(\d+) instalment\(s\) pending$/, "$1 किस्तें लंबित हैं")
+            .replace(/^(\d+) instalment\(s\) pending$/, "$1 किस्तें लंबित हैं");
+    }
+
+    if (!translated) return original;
+
+    const leading = original.match(/^\s*/)?.[0] || "";
+    const trailing = original.match(/\s*$/)?.[0] || "";
+
+    return leading + translated + trailing;
+}
+
+function translateElementAttributes(element) {
+    ["placeholder", "title", "aria-label"].forEach(attribute => {
+        if (!element.hasAttribute(attribute)) return;
+
+        let saved = originalAttributes.get(element);
+
+        if (!saved) {
+            saved = {};
+            originalAttributes.set(element, saved);
+        }
+
+        if (!(attribute in saved)) {
+            saved[attribute] = element.getAttribute(attribute);
+        }
+
+        const original = saved[attribute];
+
+        element.setAttribute(
+            attribute,
+            currentLang === "hi"
+                ? translateTextValue(original)
+                : original
+        );
+    });
+}
+
+function translateTree(root = document.body) {
+    const walker = document.createTreeWalker(
+        root,
+        NodeFilter.SHOW_TEXT
+    );
+
+    let node;
+
+    while ((node = walker.nextNode())) {
+        if (!originalTextNodes.has(node)) {
+            originalTextNodes.set(node, node.nodeValue);
+        }
+
+        const original = originalTextNodes.get(node);
+
+        node.nodeValue = currentLang === "hi"
+            ? translateTextValue(original)
+            : original;
+    }
+
+    if (root.nodeType === Node.ELEMENT_NODE) {
+        translateElementAttributes(root);
+    }
+
+    if (root.querySelectorAll) {
+        root.querySelectorAll("*").forEach(translateElementAttributes);
+    }
+}
+
+function toggleLanguage() {
+    currentLang = currentLang === "en" ? "hi" : "en";
+
+    document.documentElement.lang = currentLang;
+
+    const button = document.getElementById("langBtn");
+
+    if (button) {
+        button.textContent = currentLang === "en"
+            ? "हिन्दी / English"
+            : "English / हिन्दी";
+    }
+
+    translateTree(document.body);
+
+    showToast(
+        currentLang === "hi"
+            ? "हिंदी भाषा सक्रिय कर दी गई है।"
+            : "English language selected."
+    );
+}
+
+// Automatically translate content loaded later by API calls
+const languageObserver = new MutationObserver(mutations => {
+    if (currentLang !== "hi") return;
+
+    mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                translateTree(node);
+            } else if (node.nodeType === Node.TEXT_NODE) {
+                if (!originalTextNodes.has(node)) {
+                    originalTextNodes.set(node, node.nodeValue);
+                }
+
+                node.nodeValue = translateTextValue(
+                    originalTextNodes.get(node)
+                );
             }
         });
+    });
+});
 
-        showToast(
-            currentLang === "hi"
-                ? "हिंदी शीर्षक सक्रिय किया गया।"
-                : "English language selected."
-        );
-    }
+languageObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+});
+
+// Restore language on initial page load
+document.documentElement.lang = currentLang;
+translateTree(document.body);
 
     // --------------------------------------------------
     // ACCOUNTS DASHBOARD
